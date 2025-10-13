@@ -1,0 +1,39 @@
+# ── Terraform
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Local tfvars (keep examples!)
+terraform.tfvars
+*.auto.tfvars
+*.tfvars
+!terraform.tfvars.example
+!*.auto.tfvars.example
+!*.tfvars.example
+
+# Backend config files (if you keep creds locally)
+backend.hcl
+
+# ── Secrets & env
+.env
+.env.*
+*.key
+*.pem
+
+# ── OS/editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ── logs & temp
+*.log
+tmp/
