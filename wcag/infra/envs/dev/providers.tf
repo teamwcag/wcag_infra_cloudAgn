@@ -6,14 +6,14 @@ terraform {
     google  = { source = "hashicorp/google", version = "~> 5.0" }
   }
   backend "s3" {
-    bucket = "remed-tfstate-dev"
-    key    = "networking/terraform.tfstate"
-    region = "us-east-2"
+    bucket  = "remed-tfstate-dev"
+    key     = "networking/terraform.tfstate"
+    region  = "us-east-2"
     encrypt = true
     # dynamodb_table = "remed-tf-locks"   # old, will warn but still works
-    use_lockfile = true                   # new style, preferred
+    use_lockfile = true # new style, preferred
   }
-  
+
 }
 provider "aws" { region = var.aws_region }
 #provider "azurerm" { features {} subscription_id = var.azure_subscription_id }

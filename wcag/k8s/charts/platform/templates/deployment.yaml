@@ -1,0 +1,22 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: upload-api
+spec:
+  replicas: {{ .Values.uploadApi.replicas }}
+  selector: { matchLabels: { app: upload-api } }
+  template:
+    metadata: { labels: { app: upload-api } }
+    spec:
+      containers:
+      - name: api
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports: [{ containerPort: {{ .Values.uploadApi.containerPort }} }]
+        readinessProbe:
+          #httpGet: { path: /healthz, port: {{ .Values.uploadApi.containerPort }} }
+          httpGet: { path: {{.Values.uploadApi.healthPath}}, port: {{ .Values.uploadApi.containerPort }} }
+        livenessProbe:
+          #httpGet: { path: /healthz, port: {{ .Values.uploadApi.containerPort }} }
+          httpGet: { path: {{.Values.uploadApi.healthPath}}, port: {{ .Values.uploadApi.containerPort }} }
