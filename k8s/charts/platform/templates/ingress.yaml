@@ -1,0 +1,45 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.documentService.serviceName }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  {{- if .Values.ingress.tlsSecretName }}
+  tls:
+  - hosts: [{{ .Values.ingress.host | quote }}]
+    secretName: {{ .Values.ingress.tlsSecretName }}
+  {{- end }}
+  rules:
+  - host: {{ .Values.ingress.host }}
+    http:
+      paths:
+      {{- if not .Values.frontend.enabled }}
+      - path: {{ .Values.ingress.documentApiPath }}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.documentService.serviceName }}
+            port: { number: {{ .Values.documentService.servicePort }} }
+      {{- if .Values.ingress.tokenApiEnabled }}
+      - path: {{ .Values.ingress.tokenApiPath }}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.ingress.tokenApiServiceName }}
+            port: { number: {{ .Values.ingress.tokenApiServicePort }} }
+      {{- end }}
+      {{- end }}
+      {{- if .Values.frontend.enabled }}
+      - path: {{ .Values.ingress.frontendPath }}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.frontend.serviceName }}
+            port: { number: {{ .Values.frontend.servicePort }} }
+      {{- end }}
+{{- end }}

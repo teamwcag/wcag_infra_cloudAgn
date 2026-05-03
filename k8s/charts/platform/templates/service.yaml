@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.documentService.serviceName }}
+  {{- with .Values.documentService.serviceAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.documentService.serviceType | default "ClusterIP" }}
+  selector: { app: {{ .Values.documentService.serviceName }} }
+  ports:
+  - port: {{ .Values.documentService.servicePort }}
+    targetPort: {{ .Values.documentService.containerPort }}

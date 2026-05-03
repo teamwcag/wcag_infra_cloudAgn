@@ -1,0 +1,97 @@
+image:
+  repository: docker.io/wcagabhinav/document-service
+  tag: "1.0.0"
+  pullPolicy: IfNotPresent
+
+frontend:
+  enabled: false
+  image:
+    repository: docker.io/wcagabhinav/wcag-remediator-frontend
+    tag: "0.0.1"
+    pullPolicy: IfNotPresent
+  replicas: 1
+  containerPort: 80
+  serviceName: wcag-remediator-frontend
+  serviceType: ClusterIP
+  servicePort: 80
+
+tokenService:
+  enabled: false
+  image:
+    repository: docker.io/wcagabhinav/token-service
+    tag: "0.0.1"
+    pullPolicy: IfNotPresent
+  replicas: 1
+  containerPort: 8082
+  serviceName: token-service
+  serviceType: ClusterIP
+  servicePort: 80
+  healthPath: /healthz
+  env: {}
+
+documentService:
+  replicas: 1
+  containerPort: 8081
+  healthPath: /healthz
+  serviceName: document-service
+  serviceType: LoadBalancer
+  servicePort: 80
+  serviceAnnotations:
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internal
+  dbSecret:
+    enabled: false
+    name: document-service-db
+    usernameKey: SPRING_DATASOURCE_USERNAME
+    passwordKey: SPRING_DATASOURCE_PASSWORD
+  callbackSecret:
+    enabled: false
+    name: document-service-callback
+    tokenKey: APP_DOCUMENTS_QUEUE_CALLBACK_TOKEN
+  env:
+    SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/wcag_document
+    SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+    SPRING_DATASOURCE_USERNAME: wcag
+    SPRING_DATASOURCE_PASSWORD: ""
+    SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    SPRING_JPA_SHOW_SQL: "false"
+    APP_DOCUMENTS_STORAGE_BACKEND: s3
+    APP_DOCUMENTS_S3_ENABLED: "true"
+    APP_DOCUMENTS_S3_BUCKET_NAME: wcag-dev-docs
+    APP_DOCUMENTS_S3_REGION: us-east-2
+    APP_DOCUMENTS_QUEUE_REDIS_HOST: remed-dev-redis.pxb7gh.ng.0001.use2.cache.amazonaws.com
+    APP_DOCUMENTS_QUEUE_REDIS_PORT: "6379"
+    APP_DOCUMENTS_QUEUE_REMEDIATION_QUEUE: remediation_tasks_v1
+    APP_DOCUMENTS_QUEUE_CALLBACK_BASE_URL: http://document-service
+    APP_DOCUMENTS_QUEUE_CALLBACK_TOKEN: ""
+
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations: {}
+  host: "document.dev.example.com"
+  tlsSecretName: "document-tls"
+  frontendPath: /
+  documentApiPath: /api/documents
+  tokenApiPath: /api/tokens
+  tokenApiEnabled: false
+  tokenApiServiceName: token-service
+  tokenApiServicePort: 80
+
+externalSecret:
+  enabled: false
+  apiVersion: external-secrets.io/v1beta1
+  name: platform-secrets
+  refreshInterval: 1h
+  secretStoreKind: ClusterSecretStore
+  secretStoreName: cloud-secrets
+  targetName: app-secrets
+  data: []
+
+job:
+  enabled: false
+  image: busybox:1.36
+  args: ["sh","-c","echo 'hello from job' && sleep 5"]
+  #args: ["remediate","--object-key","tenant/demo.docx"]
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits:   { cpu: "1000m", memory: "2Gi" }

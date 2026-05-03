@@ -1,0 +1,13 @@
+{{- if .Values.tokenService.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.tokenService.serviceName }}
+spec:
+  type: {{ .Values.tokenService.serviceType }}
+  selector:
+    app: {{ .Values.tokenService.serviceName }}
+  ports:
+  - port: {{ .Values.tokenService.servicePort }}
+    targetPort: {{ .Values.tokenService.containerPort }}
+{{- end }}

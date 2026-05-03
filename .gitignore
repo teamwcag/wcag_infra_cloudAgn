@@ -1,32 +1,41 @@
-# ── Terraform
+# Terraform
 .terraform/
+**/.terraform/
 .terraform.lock.hcl
 *.tfstate
 *.tfstate.*
+*.tfplan
 crash.log
 override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
 
-# Local tfvars (keep examples!)
+# Local tfvars (keep examples)
 terraform.tfvars
+terraform.tfvars.json
 *.auto.tfvars
+*.auto.tfvars.json
 *.tfvars
 !terraform.tfvars.example
 !*.auto.tfvars.example
 !*.tfvars.example
 
-# Backend config files (if you keep creds locally)
+# Backend/local config
 backend.hcl
+kubeconfig*.yaml
+terraform-state-backup-*.json
 
-# ── Secrets & env
+# Secrets and env
 .env
 .env.*
 *.key
 *.pem
 
-# ── OS/editor noise
+# Archives and downloads
+*.zip
+
+# OS/editor noise
 .DS_Store
 Thumbs.db
 .idea/
@@ -34,6 +43,6 @@ Thumbs.db
 *.swp
 *.swo
 
-# ── logs & temp
+# Logs and temp
 *.log
 tmp/

@@ -1,0 +1,49 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.documentService.serviceName }}
+spec:
+  replicas: {{ .Values.documentService.replicas }}
+  selector: { matchLabels: { app: {{ .Values.documentService.serviceName }} } }
+  template:
+    metadata: { labels: { app: {{ .Values.documentService.serviceName }} } }
+    spec:
+      containers:
+      - name: document-service
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports: [{ containerPort: {{ .Values.documentService.containerPort }} }]
+        env:
+        {{- range $name, $value := .Values.documentService.env }}
+        {{- if not (or
+              (and $.Values.documentService.dbSecret.enabled (or (eq $name "SPRING_DATASOURCE_USERNAME") (eq $name "SPRING_DATASOURCE_PASSWORD")))
+              (and $.Values.documentService.callbackSecret.enabled (eq $name "APP_DOCUMENTS_QUEUE_CALLBACK_TOKEN"))
+            ) }}
+        - name: {{ $name }}
+          value: {{ $value | quote }}
+        {{- end }}
+        {{- end }}
+        {{- if .Values.documentService.dbSecret.enabled }}
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.documentService.dbSecret.name }}
+              key: {{ .Values.documentService.dbSecret.usernameKey }}
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.documentService.dbSecret.name }}
+              key: {{ .Values.documentService.dbSecret.passwordKey }}
+        {{- end }}
+        {{- if .Values.documentService.callbackSecret.enabled }}
+        - name: APP_DOCUMENTS_QUEUE_CALLBACK_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.documentService.callbackSecret.name }}
+              key: {{ .Values.documentService.callbackSecret.tokenKey }}
+        {{- end }}
+        readinessProbe:
+          httpGet: { path: {{ .Values.documentService.healthPath }}, port: {{ .Values.documentService.containerPort }} }
+        livenessProbe:
+          httpGet: { path: {{ .Values.documentService.healthPath }}, port: {{ .Values.documentService.containerPort }} }

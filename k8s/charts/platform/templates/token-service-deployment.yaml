@@ -1,0 +1,35 @@
+{{- if .Values.tokenService.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.tokenService.serviceName }}
+spec:
+  replicas: {{ .Values.tokenService.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.tokenService.serviceName }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.tokenService.serviceName }}
+    spec:
+      containers:
+      - name: token-service
+        image: "{{ .Values.tokenService.image.repository }}:{{ .Values.tokenService.image.tag }}"
+        imagePullPolicy: {{ .Values.tokenService.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.tokenService.containerPort }}
+        env:
+        {{- range $name, $value := .Values.tokenService.env }}
+        - name: {{ $name }}
+          value: {{ $value | quote }}
+        {{- end }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.tokenService.healthPath }}
+            port: {{ .Values.tokenService.containerPort }}
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.tokenService.healthPath }}
+            port: {{ .Values.tokenService.containerPort }}
+{{- end }}

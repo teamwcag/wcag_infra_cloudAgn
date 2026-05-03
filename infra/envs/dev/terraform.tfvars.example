@@ -1,0 +1,20 @@
+cloud       = "aws"
+name_prefix = "remed-dev"
+aws_region  = "us-east-2"
+
+azs                   = ["us-east-2a", "us-east-2b"]
+az_count              = 2
+single_nat_gateway    = true
+enable_data_subnets   = false
+enable_vpc_endpoints  = true
+enabled_vpc_endpoints = ["s3", "ecr.api", "ecr.dkr", "logs", "monitoring", "sts", "kms", "ec2", "autoscaling", "ssm", "ssmmessages", "ec2messages"]
+
+redis_subnet_tier    = "private"
+postgres_subnet_tier = "private"
+postgres_password    = "<set-locally>"
+
+frontend_image_tag = "0.0.2"
+
+# Enable when you are ready to configure ACM + HTTPS.
+# app_https_enabled          = true
+# app_acm_certificate_create = true

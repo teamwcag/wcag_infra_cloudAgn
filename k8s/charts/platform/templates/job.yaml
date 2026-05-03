@@ -1,0 +1,18 @@
+{{- if .Values.job.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: remediate-example
+spec:
+  ttlSecondsAfterFinished: 3600
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: runner
+        image: "{{ .Values.job.image }}"
+        args: {{ toYaml .Values.job.args | nindent 8 }}
+        resources:
+          requests: {{ toYaml .Values.job.resources.requests | nindent 12 }}
+          limits:   {{ toYaml .Values.job.resources.limits   | nindent 12 }}
+{{- end }}

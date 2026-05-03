@@ -1,0 +1,13 @@
+{{- if .Values.frontend.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.frontend.serviceName }}
+spec:
+  type: {{ .Values.frontend.serviceType }}
+  selector:
+    app: {{ .Values.frontend.serviceName }}
+  ports:
+  - port: {{ .Values.frontend.servicePort }}
+    targetPort: {{ .Values.frontend.containerPort }}
+{{- end }}

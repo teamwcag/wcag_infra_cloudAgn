@@ -1,0 +1,73 @@
+# Look up the VPC so we can read its CIDR
+data "aws_vpc" "this" {
+  id = module.networking.vpc_id
+}
+
+# SG for Interface VPC Endpoints – allow HTTPS from within the VPC
+# Get the bastion SG id (created in bastion.tf)
+# If your bastion SG resource name differs, update the reference below
+# Example assumes: resource "aws_security_group" "bastion_sg" { ... } in bastion.tf
+
+resource "aws_security_group" "vpce_ssm_sg" {
+  name        = "${var.name_prefix}-vpce-ssm-sg"
+  description = "Allow HTTPS from bastion to SSM interface endpoints"
+  vpc_id      = module.networking.vpc_id
+
+  # Allow HTTPS from the bastion security group
+  ingress {
+    from_port = 443
+    to_port   = 443
+    protocol  = "tcp"
+    #    security_groups = [aws_security_group.bastion_sg.id]
+    description = "HTTPS from bastion SG"
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = { Name = "${var.name_prefix}-vpce-ssm-sg" }
+}
+
+
+# SSM endpoints (Interface) in private subnets
+resource "aws_vpc_endpoint" "ssm" {
+  vpc_id            = module.networking.vpc_id
+  service_name      = "com.amazonaws.${var.aws_region}.ssm"
+  vpc_endpoint_type = "Interface"
+  subnet_ids        = module.networking.private_subnets
+  # security_group_ids  = [aws_security_group.vpce_ssm_sg.id]
+  private_dns_enabled = true
+}
+
+resource "aws_vpc_endpoint" "ec2messages" {
+  vpc_id            = module.networking.vpc_id
+  service_name      = "com.amazonaws.${var.aws_region}.ec2messages"
+  vpc_endpoint_type = "Interface"
+  subnet_ids        = module.networking.private_subnets
+  # security_group_ids  = [aws_security_group.vpce_ssm_sg.id]
+  private_dns_enabled = true
+}
+
+resource "aws_vpc_endpoint" "ssmmessages" {
+  vpc_id            = module.networking.vpc_id
+  service_name      = "com.amazonaws.${var.aws_region}.ssmmessages"
+  vpc_endpoint_type = "Interface"
+  subnet_ids        = module.networking.private_subnets
+  # security_group_ids  = [aws_security_group.vpce_ssm_sg.id]
+  private_dns_enabled = true
+}
+
+# Optional (for SSM agent logs)
+resource "aws_vpc_endpoint" "logs" {
+  vpc_id            = module.networking.vpc_id
+  service_name      = "com.amazonaws.${var.aws_region}.logs"
+  vpc_endpoint_type = "Interface"
+  subnet_ids        = module.networking.private_subnets
+  # security_group_ids  = [aws_security_group.vpce_ssm_sg.id]
+  private_dns_enabled = true
+}
+
